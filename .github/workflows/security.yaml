@@ -1,0 +1,100 @@
+name: Security Checks
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: write
+  pull-requests: write
+  security-events: write
+  actions: read
+
+jobs:
+  semgrep:
+    runs-on: ubuntu-latest
+    container:
+      image: returntocorp/semgrep:latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ github.token }}
+      
+      - name: Create reports directory
+        run: mkdir -p reports
+      
+      - name: Semgrep Security Scan with Autofix
+        run: |
+          semgrep scan \
+            --config "p/python" \
+            --config "p/secrets" \
+            --config "p/owasp-top-ten" \
+            --output reports/semgrep-results.sarif \
+            --sarif \
+            --autofix || true
+          
+      - name: Create Pull Request with fixes
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ github.token }}
+          commit-message: 'fix: auto-fixes from semgrep'
+          title: 'Semgrep Auto-fixes'
+          body: |
+            Автоматические исправления от Semgrep security scan
+            
+            Этот PR содержит автоматические исправления проблем безопасности, найденных Semgrep.
+            Пожалуйста, проверьте изменения перед merge.
+          branch: semgrep-fixes
+          base: main
+          delete-branch: true
+          
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: reports/semgrep-results.sarif
+
+      - name: Upload Semgrep Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: semgrep-results
+          path: reports/semgrep-results.sarif
+          retention-days: 14
+
+  zap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ github.token }}
+      
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Start application
+        run: |
+          nohup python path/to/your/app.py &
+      
+      - name: OWASP ZAP Scan
+        uses: zaproxy/action-full-scan@v0.3.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          target: 'http://localhost:8000' # Замените на URL вашего приложения
+          rules_file_name: '.zap/rules.tsv'
+          docker_name: 'owasp/zap2docker-weekly'
+          cmd_options: '-config api.disablekey=true'
+      
+      - name: Upload ZAP Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: zap-report
+          path: /home/runner/work/_temp/zap-report.html
+          retention-days: 14
