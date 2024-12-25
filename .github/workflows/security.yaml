@@ -191,7 +191,7 @@ jobs:
           rm -rf */
 
       - name: Archive Security Results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: security-reports-bundle
           path: combined-reports/*
