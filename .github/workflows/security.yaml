@@ -73,7 +73,7 @@ jobs:
           sarif_file: reports/semgrep-results.sarif
 
       - name: Upload Semgrep Results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: semgrep-results
           path: reports/semgrep-results.sarif
@@ -112,7 +112,7 @@ jobs:
 
       - name: Upload ZAP Results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: zap-results
           path: |
@@ -153,7 +153,7 @@ jobs:
           ./dependency-check/dependency-check/bin/dependency-check.sh --project dsvpwa --scan . --format "ALL" --out reports/dependency-check-results  --disableAssembly
 
       - name: Upload Dependency Check Results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dependency-check-results
           path: reports/dependency-check-results
