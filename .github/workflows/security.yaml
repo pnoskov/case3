@@ -61,3 +61,26 @@ jobs:
           name: semgrep-results
           path: reports/semgrep-results.sarif
           retention-days: 14
+
+  zap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ github.token }}
+      
+      - name: OWASP ZAP Scan
+        uses: zaproxy/action-full-scan@v0.3.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          target: 'http://localhost:8000' # Replace with your target URL
+          rules_file_name: '.zap/rules.tsv'
+          docker_name: 'owasp/zap2docker-stable'
+          cmd_options: '-config api.disablekey=true'
+      
+      - name: Upload ZAP Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: zap-report
+          path: /home/runner/work/_temp/zap-report.html
+          retention-days: 14
