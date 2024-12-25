@@ -144,6 +144,8 @@ jobs:
           sudo apt-get install -y openjdk-11-jdk
           wget https://github.com/jeremylong/DependencyCheck/releases/download/v6.5.3/dependency-check-6.5.3-release.zip
           unzip dependency-check-6.5.3-release.zip -d dependency-check
+          ls -l dependency-check/bin
+          echo "wihu"
           export PATH=$PATH:$(pwd)/dependency-check/bin
           ./dependency-check/bin/dependency-check.sh --version
 
