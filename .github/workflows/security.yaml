@@ -156,5 +156,43 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: dependency-check-results
-          path: reports/dependency-check-results.html
+          path: reports/dependency-check-results
+          retention-days: 14
+
+  publish_security_reports:
+    needs: [semgrep, zap_scan, dependency-check]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create reports directory
+        run: mkdir -p combined-reports
+
+      - name: Download Semgrep Results
+        uses: actions/download-artifact@v3
+        with:
+          name: semgrep-results
+          path: combined-reports
+
+      - name: Download ZAP Results
+        uses: actions/download-artifact@v3
+        with:
+          name: zap-results
+          path: combined-reports
+
+      - name: Download Dependency Check Results
+        uses: actions/download-artifact@v3
+        with:
+          name: dependency-check-results
+          path: combined-reports
+
+      - name: Prepare reports
+        run: |
+          cd combined-reports
+          find . -type f -exec mv {} ./ \;
+          rm -rf */
+
+      - name: Archive Security Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-reports-bundle
+          path: combined-reports/*
           retention-days: 14
