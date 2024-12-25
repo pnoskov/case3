@@ -150,11 +150,36 @@ jobs:
 
       - name: Run OWASP Dependency Check
         run: |
-          ./dependency-check/dependency-check/bin/dependency-check.sh --project dsvpwa --scan . --format "ALL" --out reports/dependency-check-results
+          ./dependency-check/dependency-check/bin/dependency-check.sh --project dsvpwa --scan . --format "ALL" --out reports/dependency-check-results  --disableAssembly
 
       - name: Upload Dependency Check Results
         uses: actions/upload-artifact@v3
         with:
           name: dependency-check-results
           path: reports/dependency-check-results.html
-          retention-days: 14      
+          retention-days: 14
+
+  publish_security_reports:
+    needs: [semgrep, zap_scan, dependency_check_py]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create reports directory
+        run: mkdir -p combined-reports
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: combined-reports
+
+      - name: Prepare reports
+       run: |
+          cd combined-reports
+          find . -type f -exec mv {} ./ \;
+          rm -rf */
+
+      - name: Archive Security Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-reports-bundle
+          path: combined-reports/*
+          retention-days: 14
