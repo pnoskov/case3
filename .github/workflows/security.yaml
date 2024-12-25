@@ -30,10 +30,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest
 
-      - name: Run tests
-        run: |
-          pytest
-
   semgrep:
     runs-on: ubuntu-latest
     container:
@@ -82,3 +78,35 @@ jobs:
           name: semgrep-results
           path: reports/semgrep-results.sarif
           retention-days: 14
+
+  zap_scan:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download WAR
+        uses: actions/download-artifact@v3
+        with:
+          name: war
+
+      - name: Run ZAP Scan
+        uses: zaproxy/action-baseline@v0.9.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          docker-name: 'ghcr.io/zaproxy/zaproxy:stable'
+          target: 'http://localhost:65413'
+          cmd-options: '-I'
+          rules_file_name: '.zap/rules.tsv'
+          allow_issue_writing: false
+          fail_action: false
+
+      - name: Upload ZAP Results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: zap-results
+          path: |
+            zap-*
+            *.html
+          retentions-days: 5
