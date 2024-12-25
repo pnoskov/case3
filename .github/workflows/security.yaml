@@ -147,11 +147,11 @@ jobs:
           ls -l dependency-check/bin
           echo "wihu"
           export PATH=$PATH:$(pwd)/dependency-check/bin
-          ./dependency-check/bin/dependency-check.sh --version
+          ./dependency-check/dependency-check/bin/dependency-check.sh --version
 
       - name: Run OWASP Dependency Check
         run: |
-          ./dependency-check/bin/dependency-check.sh --project dsvpwa --scan . --format "ALL" --out reports/dependency-check-results
+          ./dependency-check/dependency-check/bin/dependency-check.sh --project dsvpwa --scan . --format "ALL" --out reports/dependency-check-results
 
       - name: Upload Dependency Check Results
         uses: actions/upload-artifact@v3
