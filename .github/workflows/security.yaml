@@ -85,10 +85,19 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Download WAR
-        uses: actions/download-artifact@v3
+      - name: Set up Python
+        uses: actions/setup-python@v2
         with:
-          name: war
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+
+      - name: Start application
+        run: |
+          nohup python3 dsvpwa.py --host 0.0.0.0 --port 65413 &
 
       - name: Run ZAP Scan
         uses: zaproxy/action-baseline@v0.9.0
