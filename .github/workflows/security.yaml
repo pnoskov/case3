@@ -167,19 +167,19 @@ jobs:
         run: mkdir -p combined-reports
 
       - name: Download Semgrep Results
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: semgrep-results
           path: combined-reports
 
       - name: Download ZAP Results
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: zap-results
           path: combined-reports
 
       - name: Download Dependency Check Results
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: dependency-check-results
           path: combined-reports
