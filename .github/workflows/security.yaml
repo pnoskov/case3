@@ -67,15 +67,17 @@ jobs:
           base: main
           delete-branch: true
           
-      - name: Upload SARIF file
-        if: always()
+      - name: Check if SARIF file exists
         run: |
           if [ -f reports/semgrep-results.sarif ]; then
-            echo "SARIF file exists, uploading..."
+            echo "SARIF file exists, proceeding to upload..."
           else
             echo "SARIF file does not exist, skipping upload."
             exit 0
           fi
+
+      - name: Upload SARIF file
+        if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: reports/semgrep-results.sarif
