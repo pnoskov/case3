@@ -95,7 +95,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Download WAR
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: webapp
           path: target/
@@ -130,7 +130,7 @@ jobs:
 
       - name: Upload Tomcat Logs
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: tomcat-logs
           path: apache-tomcat-9.0.83/logs/
@@ -138,7 +138,7 @@ jobs:
 
       - name: Upload ZAP Results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: zap-results
           path: |
