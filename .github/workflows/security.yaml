@@ -10,7 +10,7 @@ permissions:
   contents: write
   pull-requests: write
   security-events: write
-  actions: read
+  actions: write
 
 jobs:
   build:
@@ -142,14 +142,14 @@ jobs:
       - name: Install OWASP Dependency Check
         run: |
           sudo apt-get install -y openjdk-11-jdk
-          wget https://github.com/jeremylong/DependencyCheck/releases/download/v6.5.3/dependency-check-6.5.3-release.zip
-          unzip dependency-check-6.5.3-release.zip -d dependency-check
+          wget https://github.com/jeremylong/DependencyCheck/releases/download/v10.0.0/dependency-check-11.1.1-release.zip
+          unzip dependency-check-10.0.0-release.zip -d dependency-check
           export PATH=$PATH:$(pwd)/dependency-check/dependency-check/bin
           ./dependency-check/dependency-check/bin/dependency-check.sh --version
 
       - name: Run OWASP Dependency Check
         run: |
-          ./dependency-check/dependency-check/bin/dependency-check.sh --project dsvpwa --scan . --format "ALL" --out reports/dependency-check-results --disableAssembly
+          ./dependency-check/dependency-check/bin/dependency-check.sh --project dsvpwa --scan . --format "HTML" --out reports/dependency-check-results --disableAssembly
 
       - name: Upload Dependency Check Results
         uses: actions/upload-artifact@v4
@@ -165,23 +165,17 @@ jobs:
       - name: Create reports directory
         run: mkdir -p combined-reports
 
-      - name: Download Semgrep Results
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          name: semgrep-results
           path: combined-reports
 
-      - name: Download ZAP Results
-        uses: actions/download-artifact@v4
-        with:
-          name: zap-results
-          path: combined-reports
-
-      - name: Download Dependency Check Results
-        uses: actions/download-artifact@v4
-        with:
-          name: dependency-check-results
-          path: combined-reports
+      - name: Check if artifacts exist
+        run: |
+          if [ -z "$(ls -A combined-reports)" ]; then
+            echo "No artifacts found"
+            exit 1
+          fi
 
       - name: Prepare reports
         run: |
