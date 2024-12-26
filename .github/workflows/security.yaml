@@ -59,22 +59,7 @@ jobs:
         run: ls -la
 
       - name: Check Semgrep Scan Results
-        run: cat semgrep-results.sarif || echo "No SARIF results found"
-          
-      - name: Create Pull Request with fixes
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: 'fix: auto-fixes from semgrep'
-          title: 'Semgrep Auto-fixes'
-          body: |
-            Автоматические исправления от Semgrep security scan
-            
-            Этот PR содержит автоматические исправления проблем безопасности, найденных Semgrep.
-            Пожалуйста, проверьте изменения перед merge.
-          branch: semgrep-fixes
-          base: main
-          delete-branch: true
+        run: cat semgrep-results.sarif || echo "No SARIF results found" 
 
       - name: List files in directory
         run: ls -la  
@@ -90,6 +75,21 @@ jobs:
           name: semgrep-results
           path: semgrep-results.sarif
           retention-days: 14
+
+      - name: Create Pull Request with fixes
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'fix: auto-fixes from semgrep'
+          title: 'Semgrep Auto-fixes'
+          body: |
+            Автоматические исправления от Semgrep security scan
+            
+            Этот PR содержит автоматические исправления проблем безопасности, найденных Semgrep.
+            Пожалуйста, проверьте изменения перед merge.
+          branch: semgrep-fixes
+          base: main
+          delete-branch: true
 
   zap_scan1:
     needs: build
