@@ -66,21 +66,17 @@ jobs:
           branch: semgrep-fixes
           base: main
           delete-branch: true
-          
-      - name: Check if SARIF file exists
-        run: |
-          if [ -f reports/semgrep-results.sarif ]; then
-            echo "SARIF file exists, proceeding to upload..."
-          else
-            echo "SARIF file does not exist, skipping upload."
-            exit 0
-          fi
+
+      - name: List files in directory
+        run: ls -la
+
+      - name: List files in reports directory
+        run: ls -la reports      
 
       - name: Upload SARIF file
-        if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: reports/semgrep-results.sarif
+          sarif_file: semgrep-results.sarif
 
       - name: Upload Semgrep Results
         uses: actions/upload-artifact@v4
