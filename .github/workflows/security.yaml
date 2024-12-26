@@ -79,7 +79,7 @@ jobs:
           path: reports/semgrep-results.sarif
           retention-days: 14
 
-  zap_scan:
+  zap_scan1:
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -159,7 +159,7 @@ jobs:
           retention-days: 14
 
   publish_security_reports:
-    needs: [semgrep, zap_scan, dependency_check_py]
+    needs: [semgrep, zap_scan1, dependency_check_py]
     runs-on: ubuntu-latest
     steps:
       - name: Create reports directory
