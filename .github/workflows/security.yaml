@@ -42,7 +42,7 @@ jobs:
       - name: Create reports directory
         run: mkdir -p reports
 
-      - name: List files in directory_0
+      - name: List files in directory before scan
         run: ls -la
       
       - name: Semgrep Security Scan with Autofix
@@ -54,6 +54,12 @@ jobs:
             --output semgrep-results.sarif \
             --sarif \
             --autofix || true
+
+      - name: List files in directory after scan
+        run: ls -la
+
+      - name: Check Semgrep Scan Results
+        run: cat semgrep-results.sarif || echo "No SARIF results found"
           
       - name: Create Pull Request with fixes
         uses: peter-evans/create-pull-request@v5
@@ -71,10 +77,7 @@ jobs:
           delete-branch: true
 
       - name: List files in directory
-        run: ls -la
-
-      - name: List files in reports directory
-        run: ls -la reports      
+        run: ls -la  
 
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v3
