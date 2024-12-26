@@ -10,7 +10,7 @@ permissions:
   contents: write
   pull-requests: write
   security-events: write
-  actions: read
+  actions: write
 
 jobs:
   build:
@@ -41,6 +41,9 @@ jobs:
       
       - name: Create reports directory
         run: mkdir -p reports
+
+      - name: List files in directory before scan
+        run: ls -la
       
       - name: Semgrep Security Scan with Autofix
         run: |
@@ -48,9 +51,15 @@ jobs:
             --config "p/python" \
             --config "p/secrets" \
             --config "p/owasp-top-ten" \
-            --output reports/semgrep-results.sarif \
+            --output semgrep-results.sarif \
             --sarif \
             --autofix || true
+
+      - name: List files in directory after scan
+        run: ls -la
+
+      - name: Check Semgrep Scan Results
+        run: cat semgrep-results.sarif || echo "No SARIF results found"
           
       - name: Create Pull Request with fixes
         uses: peter-evans/create-pull-request@v5
@@ -66,17 +75,20 @@ jobs:
           branch: semgrep-fixes
           base: main
           delete-branch: true
-          
+
+      - name: List files in directory
+        run: ls -la  
+
       - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: reports/semgrep-results.sarif
+          sarif_file: semgrep-results.sarif
 
       - name: Upload Semgrep Results
         uses: actions/upload-artifact@v4
         with:
           name: semgrep-results
-          path: reports/semgrep-results.sarif
+          path: semgrep-results.sarif
           retention-days: 14
 
   zap_scan1:
@@ -142,14 +154,14 @@ jobs:
       - name: Install OWASP Dependency Check
         run: |
           sudo apt-get install -y openjdk-11-jdk
-          wget https://github.com/jeremylong/DependencyCheck/releases/download/v6.5.3/dependency-check-6.5.3-release.zip
-          unzip dependency-check-6.5.3-release.zip -d dependency-check
+          wget https://github.com/jeremylong/DependencyCheck/releases/download/v8.4.3/dependency-check-8.4.3-release.zip
+          unzip dependency-check-8.4.3-release.zip -d dependency-check
           export PATH=$PATH:$(pwd)/dependency-check/dependency-check/bin
           ./dependency-check/dependency-check/bin/dependency-check.sh --version
 
       - name: Run OWASP Dependency Check
         run: |
-          ./dependency-check/dependency-check/bin/dependency-check.sh --project dsvpwa --scan . --format "ALL" --out reports/dependency-check-results --disableAssembly
+          ./dependency-check/dependency-check/bin/dependency-check.sh --project dsvpwa --scan . --format "HTML" --out reports/dependency-check-results --disableAssembly
 
       - name: Upload Dependency Check Results
         uses: actions/upload-artifact@v4
@@ -165,23 +177,17 @@ jobs:
       - name: Create reports directory
         run: mkdir -p combined-reports
 
-      - name: Download Semgrep Results
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          name: semgrep-results
           path: combined-reports
 
-      - name: Download ZAP Results
-        uses: actions/download-artifact@v4
-        with:
-          name: zap-results
-          path: combined-reports
-
-      - name: Download Dependency Check Results
-        uses: actions/download-artifact@v4
-        with:
-          name: dependency-check-results
-          path: combined-reports
+      - name: Check if artifacts exist
+        run: |
+          if [ -z "$(ls -A combined-reports)" ]; then
+            echo "No artifacts found"
+            exit 1
+          fi
 
       - name: Prepare reports
         run: |
